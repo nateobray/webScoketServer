@@ -1,5 +1,5 @@
 {
-	"name": "obray/webSocketServer",
+	"name": "obray/web-socket-server",
 	"description": "PHP based WebSocket server.",
 	"license": "MIT",
 	"homepage": "http://www.obray.net",
