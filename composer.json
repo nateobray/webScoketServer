@@ -1,0 +1,14 @@
+{
+	"name": "obray/webSocketServer",
+	"description": "PHP based WebSocket server.",
+	"license": "MIT",
+	"homepage": "http://www.obray.net",
+	"require": {
+		"php": ">=7.0"
+	},
+	"autoload": {
+		"psr-4": {
+			"obray\\": "src"
+		}
+	}
+}
