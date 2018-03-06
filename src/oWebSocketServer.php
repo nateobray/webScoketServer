@@ -44,6 +44,7 @@
 
 		public function __construct($host=NULL,$port=NULL,$protocol='ws',$debug_mode=FALSE){
 
+			print_r("Setting up WebSocket server.");
 			/*************************************************************************************************
 
 				1.  Establish a connection on specified host and port
@@ -60,17 +61,13 @@
 			$this->host = !empty($host)?$host:"localhost";
 			$this->port = !empty($port)?$port:"80";
 			$this->debug_mode = $debug_mode;
-			if( !empty($params["debug"]) ){
-				$this->debug_mode = TRUE;
-				unset($params["debug"]);
-			}
-
+			
 			//	2.	determine the protocol to connect (essentially on client side ws or wss) and create
 			//		context.
 			if( $protocol == "ws" ){
 
 				$protocol = "tcp";
-				$context = 		stream_context_create();
+				$context = stream_context_create();
 
 			} else if( in_array($protocol,['wss','ssl']) ) {
 
@@ -110,7 +107,7 @@
 			//	4. 	setup some server data stores
 
 			// keeps track of the parent process PID, we use this for sending messages through the queue to the parent
-			$this->parent_process_pid = getmypid();
+			$this->parent_process_pid = 1;
 
 			// stores fragmented messages so they can be reconstructed
 			$this->fragments = array();
@@ -219,7 +216,10 @@
 			if( msg_receive( $this->message_queue, $msgType, $received_type, 8192000, $message, FALSE, MSG_IPC_NOWAIT, $error_code ) ){
 				return $message;
 			} else {
-				if( $error_code !== 42 ){
+				if( !in_array($error_code,[42]) ){
+					print_r($msgType."\n");
+					print_r($message."\n");
+					print_r($received_type."\n");
 					print_r("Error receiving message from queue (".$error_code.")!\n");
 				}
 				return FALSE;
@@ -237,8 +237,8 @@
 
 		********************************************************************************************************************/
 
-		private function select( $socket ){
-
+		private function select( $socket )
+		{
 			$this->child_process_pid = getmypid();
 			$this->debug("%s","\tStarting child stream_select()\n","GreenBold");
 			$connected = TRUE;
@@ -328,41 +328,43 @@
 									socket connection.
 
 			onConnect: 				Called when connection is established and handshake completed successfully.  Overwrite this
-									method when you need to do more setup or authenticat on the connection.
+									method when you need to do more setup or authenticate on the connection.
 
 			onDisconnect: 			Called after a connection is successfully disconnected. Overwrite this method to do whatever
 									cleanup you need to after a connect is closed
 
 		********************************************************************************************************************/
 
-		public function onSocketReceive($frame, $changed_socket){
-			
+		public function onSocketReceive($frame, $changed_socket)
+		{	
 			$this->messageQueueSend( $this->parent_process_pid, $frame->msg );
 			print_r("\tEchoed message!\n");
-			return;
-			
+			return;	
 		}
 
-		public function onQueueReceiveChild($message){
-			
+		public function onQueueReceiveChild($message)
+		{	
 			$this->send( $message );
-			return;
-			
+			return;	
 		}
 
-		public function onConnect( $headers ){
+		public function onConnect( $headers )
+		{
 			return TRUE;
 		}
 
-		public function onConnected( ){
+		public function onConnected( )
+		{
 
 		}
 
-		public function onDisconnect( $index ){
+		public function onDisconnect( $index )
+		{
 			return TRUE;
 		}
 
-		public function onChildLoop(){
+		public function onChildLoop()
+		{
 
 		}
 
@@ -375,24 +377,21 @@
 
 		********************************************************************************************************************/
 
-		public function onQueueReceiveParent( $message ){
-
-
-			
+		public function onQueueReceiveParent( $message )
+		{
 			forEach( $this->socketNumbers as $i => $num ){
-
 				print_r("\tRelaying message on process: ".$num."\n");
 				$this->messageQueueSend( $num, $message );
-
 			}
+		}
+
+		public function onForked()
+		{
 
 		}
 
-		public function onForked(){
-
-		}
-
-		public function onParentLoop(){
+		public function onParentLoop()
+		{
 
 		}
 		
