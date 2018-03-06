@@ -27,8 +27,7 @@
 	*****************************************************************************/
 
 	namespace obray;
-	if (!class_exists( 'obray\oObject' )) { die(); }
-
+	
 	/********************************************************************************************************************
 
 		oWebSocketServer:
@@ -38,12 +37,12 @@
 				1. 	
 			
 	********************************************************************************************************************/
-
-	Class oWebSocketServer extends obray\oDBO {
+	
+	Class oWebSocketServer {
 
 		public $MSGQUEUE = 2678;
 
-		public function __construct($params){
+		public function __construct($host=NULL,$port=NULL,$protocol='ws',$debug_mode=FALSE){
 
 			/*************************************************************************************************
 
@@ -58,9 +57,9 @@
 			*************************************************************************************************/
 
 			//	1.	retreive host and ports or set them to defaults
-			$this->host = !empty($params["host"])?$params["host"]:"localhost";
-			$this->port = !empty($params["port"])?$params["port"]:"80";
-			$this->debug_mode = FALSE;
+			$this->host = !empty($host)?$host:"localhost";
+			$this->port = !empty($port)?$port:"80";
+			$this->debug_mode = $debug_mode;
 			if( !empty($params["debug"]) ){
 				$this->debug_mode = TRUE;
 				unset($params["debug"]);
@@ -68,12 +67,12 @@
 
 			//	2.	determine the protocol to connect (essentially on client side ws or wss) and create
 			//		context.
-			if( __WEB_SOCKET_PROTOCOL__ == "ws" ){
+			if( $protocol == "ws" ){
 
 				$protocol = "tcp";
 				$context = 		stream_context_create();
 
-			} else if( in_array(__WEB_SOCKET_PROTOCOL__,['wss','ssl']) ) {
+			} else if( in_array($protocol,['wss','ssl']) ) {
 
 				$protocol = "ssl";
 				try{
@@ -88,30 +87,25 @@
 					) ) );
 
 				} catch( Exception $err ){
-
-					$this->debug("Unable to create stream context: ".$err->getMessage()."\n");
-					$this->throwError("Unable to create stream context: ".$err->getMessage());
+					print_r("Unable to create stream context.\n");
 					return;
-
 				}
 
 			} else {
-				$this->debug("%s","Bad protocal requested!\n","RedBold");
+				print_r("Bad protocal requested!\n");
 				return;
 			}
 
 			//	3.	establish connection or abort on error
 			$listenstr = 	$protocol."://".$this->host.":".$this->port;
-			$this->console("Binding to ".$this->host.":".$this->port." over ".$protocol."\n");
+			printf("%s","Binding to ".$this->host.":".$this->port." over ".$protocol."\n");
 			$this->socket = @stream_socket_server($listenstr,$errno,$errstr,STREAM_SERVER_BIND|STREAM_SERVER_LISTEN,$context);
 
 			if( !is_resource($this->socket) ){
-				$this->console("%s",$errstr."\n","RedBold");
-				$this->throwError($errstr);
-				return;
+				throw new \Exception("Unabel to bind to ".$this->host.":".$this->port." over ".$protocol."\n");
 			}
 
-			$this->console("%s","Listening...\n","GreenBold");
+			printf("%s","Listening...\n");
 			
 			//	4. 	setup some server data stores
 
@@ -149,7 +143,7 @@
 				if( in_array($this->socket,$changed) ){
 
 					// put new connection onto new thread
-					$this->console("%s","Starting new process.\n","YellowBold");
+					print_r("Starting new process.\n");
 					
 					$pid = pcntl_fork();
 
@@ -208,7 +202,7 @@
 
 		protected function messageQueueSend( $msgType, $message ){
 			if( !msg_send( $this->message_queue, $msgType, $message, FALSE, TRUE, $error_code ) ){
-				$this->console("%s","Error (".$error_code."): Unable to queue message.\n","RedBold");
+				print_r("Error (".$error_code."): Unable to queue message.\n");
 			}
 		}
 
@@ -226,7 +220,7 @@
 				return $message;
 			} else {
 				if( $error_code !== 42 ){
-					$this->console("%s","Error receiving message from queue (".$error_code.")!\n","RedBold");
+					print_r("Error receiving message from queue (".$error_code.")!\n");
 				}
 				return FALSE;
 			}
@@ -344,7 +338,7 @@
 		public function onSocketReceive($frame, $changed_socket){
 			
 			$this->messageQueueSend( $this->parent_process_pid, $frame->msg );
-			$this->console("%s","\tEchoed message!\n","GreenBold");
+			print_r("\tEchoed message!\n");
 			return;
 			
 		}
@@ -387,7 +381,7 @@
 			
 			forEach( $this->socketNumbers as $i => $num ){
 
-				$this->console("\tRelaying message on process: ".$num."\n");
+				print_r("\tRelaying message on process: ".$num."\n");
 				$this->messageQueueSend( $num, $message );
 
 			}
@@ -399,8 +393,6 @@
 		}
 
 		public function onParentLoop(){
-			
-			sleep(5);
 
 		}
 		
@@ -618,7 +610,7 @@
 
 		private function parseRequestHeader( $request ){
 
-			$headers = new stdClass();
+			$headers = new \stdClass();
 
 			$header_lines = explode("\n",$request);
 			if( empty($header_lines) ){ return $headers; }
@@ -1000,7 +992,7 @@
 
 		private function decode( $msg,$changed_socket ){
 			
-			$frame = new stdClass();
+			$frame = new \stdClass();
 			if( !is_array($msg) ){
 				$ascii_array = array_map("ord",str_split( $msg ));
 			} else {
@@ -1321,7 +1313,7 @@
 		protected function debug($format,$text=NULL,$color=NULL){
 
 			if( !empty($this->debug_mode) ){
-				$this->console($format,$text,$color);
+				print_r($text);
 			}
 
 		}
