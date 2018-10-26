@@ -147,7 +147,7 @@
 					if( $pid === -1 ){
 						$this->debug("%s","Could not create process!\n","RedBold");
 					} else if( $pid ) {
-						$this->deubg("%s","\tParent thread done spawning child: ".$pid."\n","GreenBold");
+						$this->debug("%s","\tParent thread done spawning child: ".$pid."\n","GreenBold");
 						$this->socketNumbers[] = $pid;
 						// removes original socket from the changed array (so we don't keep looking for a new connections)
 						$found_socket = array_search($this->socket, $changed);
