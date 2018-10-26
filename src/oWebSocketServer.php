@@ -140,14 +140,14 @@
 				if( in_array($this->socket,$changed) ){
 
 					// put new connection onto new thread
-					print_r("Starting new process.\n");
+					$this->console("%s","Starting new process.\n","GreenBold");
 					
 					$pid = pcntl_fork();
 
 					if( $pid === -1 ){
-						$this->debug("%s","Could not create process!\n","RedBold");
+						$this->console("%s","Could not create process!\n","RedBold");
 					} else if( $pid ) {
-						$this->debug("%s","\tParent thread done spawning child: ".$pid."\n","GreenBold");
+						$this->console("%s","\tParent thread done spawning child: ".$pid."\n","GreenBold");
 						$this->socketNumbers[] = $pid;
 						// removes original socket from the changed array (so we don't keep looking for a new connections)
 						$found_socket = array_search($this->socket, $changed);
@@ -159,6 +159,7 @@
 						if( $new_socket ){  
 							$this->select( $new_socket );
 						}
+						$this->console("%s","Exiting child process\n","RedBold");
 						exit();
 					}
 
@@ -259,7 +260,7 @@
 				
 				//		1.	stream select on child socket
 				$changed = array( 0 => $socket ); $null = NULL;
-				@stream_select( $changed, $null, $null, 0, 20000 );
+				stream_select( $changed, $null, $null, 0, 20000 );
 			
 				//		2.	for any changes on the socket attempt to process the message
 				foreach ( array_keys($changed) as $changed_key) {
@@ -273,8 +274,10 @@
 
 						$buf = $this->fread_stream($changed_socket,100000*1024);
 						if( $buf == FALSE ){
-							$this->debug("%s","\nUnable to read from socket\n","RedBold");
+							$this->debug("%s","\nUnable to read from socket in child process.\n","RedBold");
 							$this->disconnect($changed_socket);
+							unset($changed[$changed_key]);
+							$connected = FALSE;
 							break;
 						}
 
@@ -284,7 +287,7 @@
 						unset($changed[$changed_key]);
 
 						// this prevents possible endless loop
-							if( $info['unread_bytes'] <= 0 ){ break; }
+						if( $info['unread_bytes'] <= 0 ){ break; }
 						break;
 
 					//	3.	if EOF then close connection.
@@ -379,6 +382,9 @@
 
 		public function onQueueReceiveParent( $message )
 		{
+			if( empty($this->socketNumbers) ){
+				print_r("\tNo child process to relay message to.\n");
+			}
 			forEach( $this->socketNumbers as $i => $num ){
 				print_r("\tRelaying message on process: ".$num."\n");
 				$this->messageQueueSend( $num, $message );
