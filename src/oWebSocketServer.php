@@ -140,14 +140,14 @@
 				if( in_array($this->socket,$changed) ){
 
 					// put new connection onto new thread
-					$this->console("%s","Starting new process.\n","GreenBold");
+					$this->debug("%s","Starting new process.\n","GreenBold");
 					
 					$pid = pcntl_fork();
 
 					if( $pid === -1 ){
-						$this->console("%s","Could not create process!\n","RedBold");
+						$this->debug("%s","Could not create process!\n","RedBold");
 					} else if( $pid ) {
-						$this->console("%s","\tParent thread done spawning child: ".$pid."\n","GreenBold");
+						$this->deubg("%s","\tParent thread done spawning child: ".$pid."\n","GreenBold");
 						$this->socketNumbers[] = $pid;
 						// removes original socket from the changed array (so we don't keep looking for a new connections)
 						$found_socket = array_search($this->socket, $changed);
@@ -159,7 +159,7 @@
 						if( $new_socket ){  
 							$this->select( $new_socket );
 						}
-						$this->console("%s","Exiting child process\n","RedBold");
+						$this->debug("%s","Exiting child process\n","RedBold");
 						exit();
 					}
 
@@ -1316,11 +1316,7 @@
 		}
 
 		protected function debug($format,$text=NULL,$color=NULL){
-
-			if( !empty($this->debug_mode) ){
-				print_r($text);
-			}
-
+			print_r($text);
 		}
 
 	}
