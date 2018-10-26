@@ -99,7 +99,7 @@
 			$this->socket = @stream_socket_server($listenstr,$errno,$errstr,STREAM_SERVER_BIND|STREAM_SERVER_LISTEN,$context);
 
 			if( !is_resource($this->socket) ){
-				throw new \Exception("Unabel to bind to ".$this->host.":".$this->port." over ".$protocol."\n");
+				throw new \Exception("Unable to bind to ".$this->host.":".$this->port." over ".$protocol."\n");
 			}
 
 			printf("%s","Listening...\n");
@@ -165,7 +165,7 @@
 						if( $new_socket ){  
 							$this->select( $new_socket );
 						}
-						$this->debug("%s","Exiting child process\n","RedBold");
+						$this->debug("%s",Date('Y-m-d H:i:s') . " - Exiting child process (".$this->child_process_pid.")\n","RedBold");
 						exit();
 					}
 
@@ -586,16 +586,15 @@
 		public function send($msg){
 			
 			//	1.	make sure the socket has not timed out or lost it's connection
-			$this->debug("\tMaking sure socket hasn't timed out...");
+			
 			$info = stream_get_meta_data($this->childSocket);
 			if( feof($this->childSocket) || $info['timed_out'] ){
 				$this->disconnect();
 				return FALSE;
 			}
-			$this->debug("%s","done\n","GreenBold");
-
+			
 			//	2.	send message
-			$this->debug("\tWriting to socket...");
+			$this->debug("%s","\tProcess " . $this->child_process_pid . "Writing to socket...");
 			if( $this->fwrite_stream($this->childSocket,$this->mask($msg)) == FALSE ){
 				$this->disconnect();
 				return FALSE;				
