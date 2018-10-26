@@ -134,7 +134,7 @@
 			while(true){
 				++$numLoops;
 				if( $numLoops > 100){
-					$this->debug("%",date("Y-m-d H:i:s")." - Parent process still alive.\n");
+					$this->debug("%",date("Y-m-d H:i:s")." - Parent process still alive (sockets: ".count($this->socketNumbers).").\n");
 					$numLoops = 0;
 				}
 
