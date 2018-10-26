@@ -119,6 +119,7 @@
 			$this->message_queue = msg_get_queue($this->MSGQUEUE);
 			msg_remove_queue($this->message_queue);
 			$this->message_queue = msg_get_queue($this->MSGQUEUE);
+			$numLoops = 0;
 
 			/*************************************************************************************************
 
@@ -131,6 +132,11 @@
 			*************************************************************************************************/
 
 			while(true){
+				++$numLoops;
+				if( $numLoops > 100){
+					$this->debug("%",date("Y-m-d H:i:s")." - Parent process still alive.\n");
+					$numLoops = 0;
+				}
 
 				//	1. 	stream_select: look for changes on the socket to process incoming connections
 				$changed = array( 0 => $this->socket ); $null = NULL;
