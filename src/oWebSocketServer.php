@@ -115,6 +115,8 @@
 			// stores threads for independent connections
 			$this->socketNumbers = array();
 
+			$this->stoppedProcesses = array();
+
 			// message queue for communication between forked processes
 			$this->message_queue = msg_get_queue($this->MSGQUEUE);
 			msg_remove_queue($this->message_queue);
@@ -135,6 +137,10 @@
 				++$numLoops;
 				if( $numLoops > 100){
 					$this->debug("%",date("Y-m-d H:i:s")." - Parent process still alive (sockets: ".count($this->socketNumbers).").\n");
+					if(!empty($this->stoppedProcesses)){
+						print_r("Stopped processes:\n");
+						print_r($this->stoppedProcesses);
+					}
 					$numLoops = 0;
 				}
 
@@ -182,6 +188,20 @@
 
 				$exited_pid = pcntl_waitpid(0,$status,WNOHANG|WUNTRACED);
 				if( $exited_pid > 0 ){
+
+					if(pcntl_wifexited($status)){
+						$this->debug("%s","\nProcess " . $exited_pid . " exited normally, remaining: ".count($this->socketNumbers)."\n","YellowBold");
+					}
+
+					if(pcntl_wifstopped($status)){
+						$this->debug("%s","\nProcess " . $exited_pid . " is stopped but did not exit normally, remaining: ".count($this->socketNumbers)."\n","YellowBold");
+						$this->stoppedProcesses[] = $exited_pid;
+					}
+
+					if(pcntl_wifsignaled($status)){
+						$this->debug("%s","\nProcess " . $exited_pid . " was termined from an uncaught signal and did not exit normally, remaining: ".count($this->socketNumbers)."\n","YellowBold");
+					}
+
 					$index = array_search( $exited_pid, $this->socketNumbers );
 					if( $index !== FALSE ){
 						unset($this->socketNumbers[$index]);
@@ -190,8 +210,19 @@
 					$this->debug("%s","\nProcess " . $exited_pid . " killed, number left: ".count($this->socketNumbers)."\n","YellowBold");
 				} else if ($exited_pid == -1){
 					$this->debug("%s","\nError on child and was not able to kill child (".count($this->socketNumbers).")\n","YellowBold");
+					if(pcntl_wifexited($status)){
+						$this->debug("%s","\nProcess " . $exited_pid . " exited normally, remaining: ".count($this->socketNumbers)."\n","YellowBold");
+					}
+
+					if(pcntl_wifstopped($status)){
+						$this->debug("%s","\nProcess " . $exited_pid . " is stopped but did not exit normally, remaining: ".count($this->socketNumbers)."\n","YellowBold");
+						$this->stoppedProcesses[] = $exited_pid;
+					}
+
+					if(pcntl_wifsignaled($status)){
+						$this->debug("%s","\nProcess " . $exited_pid . " was termined from an uncaught signal and did not exit normally, remaining: ".count($this->socketNumbers)."\n","YellowBold");
+					}
 				}
-				
 
 				$this->onParentLoop();
 				
