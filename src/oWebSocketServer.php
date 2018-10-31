@@ -140,7 +140,7 @@
 
 				//	1. 	stream_select: look for changes on the socket to process incoming connections
 				$changed = array( 0 => $this->socket ); $null = NULL;
-				@stream_select( $changed, $null, $null, 0, 20000 );
+				stream_select( $changed, $null, $null, 0, 20000 );
 
 				//	2. 	If new connection fork process to child and pass off connection, continue loop
 				if( in_array($this->socket,$changed) ){
@@ -180,7 +180,7 @@
 
 				//	4. 	check if child processes have terminated and update list
 
-				$exited_pid = pcntl_waitpid(0,$status,WNOHANG);
+				$exited_pid = pcntl_waitpid(0,$status,WNOHANG|WUNTRACED);
 				if( $exited_pid > 0 ){
 					$index = array_search( $exited_pid, $this->socketNumbers );
 					if( $index !== FALSE ){
@@ -188,7 +188,10 @@
 						$this->socketNumbers = array_values($this->socketNumbers);
 					}
 					$this->debug("%s","\nProcess " . $exited_pid . " killed, number left: ".count($this->socketNumbers)."\n","YellowBold");
+				} else if ($exited_pid == -1){
+					$this->debug("%s","\nError on child and was not able to kill child (".count($this->socketNumbers).")\n","YellowBold");
 				}
+				
 
 				$this->onParentLoop();
 				
@@ -287,7 +290,7 @@
 							unset($changed[$found_socket]);
 							$connected = FALSE;	
 							$this->debug("%s","\nConnected set to false.\n","RedBold");
-							continue;
+							break;
 						}
 
 						$this->debug("%s","\nNew message Received.\n","YellowBold");
@@ -493,10 +496,14 @@
 			$this->debug("%s","\nAttempting to disconnect.\n","YellowBold");
 
 			//	1.	shutdown the socket connection
-			stream_socket_shutdown($this->childSocket,STREAM_SHUT_RDWR);
+			$shutdown = stream_socket_shutdown($this->childSocket,STREAM_SHUT_RDWR);
+			if($shutdown===FALSE){
+				$this->debug("%s","Failed to shutdown socket.\n","RedBold");
+			} else {
+				$this->debug("%s","\tDisconnect successful, calling onDisconnect.\n","GreenBold");
+			}
 
 			//	2.	call onDisconnect
-			$this->debug("%s","\tDisconnect successful, calling onDisconnect.\n","GreenBold");
 			$this->onDisconnect( $this->childSocket );
 
 			//	3.	Terminate the process
