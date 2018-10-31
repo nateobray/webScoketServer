@@ -282,9 +282,12 @@
 						if( $buf == FALSE ){
 							$this->debug("%s","\nUnable to read from socket in child process.\n","RedBold");
 							$this->disconnect($changed_socket);
-							unset($changed[$changed_key]);
-							$connected = FALSE;
-							break;
+							// remove from changed socket array
+							$found_socket = array_search($changed_socket, $changed);
+							unset($changed[$found_socket]);
+							$connected = FALSE;	
+							$this->debug("%s","\nConnected set to false.\n","RedBold");
+							continue;
 						}
 
 						$this->debug("%s","\nNew message Received.\n","YellowBold");
@@ -293,8 +296,8 @@
 						unset($changed[$changed_key]);
 
 						// this prevents possible endless loop
-						if( $info['unread_bytes'] <= 0 ){ break; }
-						break;
+						if( $info['unread_bytes'] <= 0 ){ continue; }
+						continue;
 
 					//	3.	if EOF then close connection.
 					} else if( feof($changed_socket) || $info['timed_out'] ){
@@ -306,7 +309,7 @@
 						$found_socket = array_search($changed_socket, $changed);
 						unset($changed[$found_socket]);
 						$connected = FALSE;
-						break;
+						continue;
 
 					}
 
@@ -321,6 +324,8 @@
 				$this->onChildLoop();
 
 			}
+
+			$this->debug("%s","\nBreaking out of while loop.\n","RedBold");
 
 		}
 
