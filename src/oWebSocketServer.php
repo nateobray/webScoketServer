@@ -539,11 +539,11 @@
 					$this->debug("%s","\tStream socket shutown successful.\n","GreenBold");
 				}
 
-				//if($fclose===FALSE){
-				//	$this->debug("%s","\tfclose failed.\n","RedBold");
-				//} else {
-				//	$this->debug("%s","\tfclose successful.\n","GreenBold");
-				//}
+				if($fclose===FALSE){
+					$this->debug("%s","\tfclose failed.\n","RedBold");
+				} else {
+					$this->debug("%s","\tfclose successful.\n","GreenBold");
+				}
 
 			} else {
 				$this->debug("%s","\tError shutting down socket: Child Socket is no longer a valid resource.\n","RedBold");
