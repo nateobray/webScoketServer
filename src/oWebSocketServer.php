@@ -178,14 +178,14 @@
 				}
 
 				//	3. 	check message queue for messages for the parent process
-
+				$this->debug("%s","-");
 				$message = $this->messageQueueReceive( $this->parent_process_pid );
 				if( $message !== FALSE ){
 					$this->onQueueReceiveParent( $message );
 				}
 
 				//	4. 	check if child processes have terminated and update list
-				$this->debug("%s",".");
+				$this->debug("%s","=");
 				$exited_pid = pcntl_waitpid(-1,$status,WNOHANG|WUNTRACED);
 				if( $exited_pid > 0 ){
 
