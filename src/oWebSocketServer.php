@@ -431,7 +431,7 @@
 				print_r("\tNo child process to relay message to.\n");
 			}
 			forEach( $this->socketNumbers as $i => $num ){
-				print_r("\tRelaying message on process: ".$num."\n");
+				//print_r("\tRelaying message on process: ".$num."\n");
 				$this->messageQueueSend( $num, $message );
 			}
 		}
@@ -532,28 +532,28 @@
 				$fclose = fclose($this->childSocket);
 
 				if($streamShutdown===FALSE){
-					$this->debug("%s","Failed to shutdown socket.\n","RedBold");
+					$this->debug("%s","\tStream socket shutdown failed.\n","RedBold");
 				} else {
-					$this->debug("%s","\tDisconnect successful, calling onDisconnect.\n","GreenBold");
+					$this->debug("%s","\tStream socket shutown successful.\n","GreenBold");
 				}
 
 				if($fclose===FALSE){
-					$this->debug("%s","Failed to fclose socket.\n","RedBold");
+					$this->debug("%s","\tfclose failed.\n","RedBold");
 				} else {
-					$this->debug("%s","fclose worked.\n","GreenBold");
+					$this->debug("%s","\tfclose successful.\n","GreenBold");
 				}
 
 			} else {
-				$this->debug("%s","Child Socket is no longer a valid resource.\n","RedBold");
+				$this->debug("%s","\tError shutting down socket: Child Socket is no longer a valid resource.\n","RedBold");
 			}
-			
 
 			//	2.	call onDisconnect
+			$this->debug("%s","\tCalling onDisconnect.\n","GreenBold");
 			$this->onDisconnect( $this->childSocket );
 
 			//	3.	Terminate the process
 			$this->debug("%s","Exiting the process.\n","GreenBold");
-			exit();
+			exit(0);
 
 		}
 
@@ -652,12 +652,12 @@
 			}
 			
 			//	2.	send message
-			$this->debug("%s","\tProcess " . $this->child_process_pid . "Writing to socket...");
+			//$this->debug("%s","\tProcess " . $this->child_process_pid . "Writing to socket...");
 			if( $this->fwrite_stream($this->childSocket,$this->mask($msg)) == FALSE ){
 				$this->disconnect();
 				return FALSE;				
 			}
-			$this->debug("%s","done\n","GreenBold");
+			//$this->debug("%s","done\n","GreenBold");
 			
 			return TRUE;
 			
