@@ -136,7 +136,7 @@
 			while(true){
 				++$numLoops;
 				if( $numLoops > 100){
-					$this->debug("%",date("Y-m-d H:i:s")." - Parent process still alive (sockets: ".count($this->socketNumbers).").\n");
+					$this->debug("%",date("Y-m-d H:i:s")." - Parent process (".$this->parent_process_pid.") still alive (sockets: ".count($this->socketNumbers).").\n");
 					if(!empty($this->stoppedProcesses)){
 						print_r("Stopped processes:\n");
 						print_r($this->stoppedProcesses);
@@ -227,7 +227,7 @@
 				$this->onParentLoop();
 				
 			}
-
+			$this->debug("%s","Broken out of infinite while loop.\m","RedBold");
 			pcntl_wait();
 
 		}
@@ -527,17 +527,32 @@
 			$this->debug("%s","\nAttempting to disconnect.\n","YellowBold");
 
 			//	1.	shutdown the socket connection
-			$shutdown = stream_socket_shutdown($this->childSocket,STREAM_SHUT_RDWR);
-			if($shutdown===FALSE){
-				$this->debug("%s","Failed to shutdown socket.\n","RedBold");
+			if (is_resource($this->childSocket)) {
+				$streamShutdown = stream_socket_shutdown($this->childSocket, STREAM_SHUT_RDWR);
+				$fclose = fclose($this->childSocket);
+
+				if($streamShutdown===FALSE){
+					$this->debug("%s","Failed to shutdown socket.\n","RedBold");
+				} else {
+					$this->debug("%s","\tDisconnect successful, calling onDisconnect.\n","GreenBold");
+				}
+
+				if($fclose===FALSE){
+					$this->debug("%s","Failed to fclose socket.\n","RedBold");
+				} else {
+					$this->debug("%s","fclose worked.\n","GreenBold");
+				}
+
 			} else {
-				$this->debug("%s","\tDisconnect successful, calling onDisconnect.\n","GreenBold");
+				$this->debug("%s","Child Socket is no longer a valid resource.\n","RedBold");
 			}
+			
 
 			//	2.	call onDisconnect
 			$this->onDisconnect( $this->childSocket );
 
 			//	3.	Terminate the process
+			$this->debug("%s","Exiting the process.\n","GreenBold");
 			exit();
 
 		}
