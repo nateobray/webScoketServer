@@ -209,7 +209,7 @@
 					}
 					$this->debug("%s","\nProcess " . $exited_pid . " killed, number left: ".count($this->socketNumbers)."\n","YellowBold");
 				} else if ($exited_pid == -1){
-					if( $this->socketNumbers > 0 ){
+					if( count($this->socketNumbers) > 0 ){
 						$this->debug("%s","\nError on child and was not able to kill child (".count($this->socketNumbers).")\n","YellowBold");
 						if(pcntl_wifexited($status)){
 							$this->debug("%s","\nProcess " . $exited_pid . " exited normally, remaining: ".count($this->socketNumbers)."\n","YellowBold");
