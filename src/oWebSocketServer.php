@@ -531,7 +531,7 @@
 			//	1.	shutdown the socket connection
 			if (is_resource($this->childSocket)) {
 				$streamShutdown = stream_socket_shutdown($this->childSocket, STREAM_SHUT_RDWR);
-				//$fclose = fclose($this->childSocket);
+				$fclose = fclose($this->childSocket);
 
 				if($streamShutdown===FALSE){
 					$this->debug("%s","\tStream socket shutdown failed.\n","RedBold");
