@@ -529,7 +529,7 @@
 			//	1.	shutdown the socket connection
 			if (is_resource($this->childSocket)) {
 				$streamShutdown = stream_socket_shutdown($this->childSocket, STREAM_SHUT_RDWR);
-				$fclose = fclose($this->childSocket);
+				//$fclose = fclose($this->childSocket);
 
 				if($streamShutdown===FALSE){
 					$this->debug("%s","\tStream socket shutdown failed.\n","RedBold");
@@ -537,11 +537,11 @@
 					$this->debug("%s","\tStream socket shutown successful.\n","GreenBold");
 				}
 
-				if($fclose===FALSE){
-					$this->debug("%s","\tfclose failed.\n","RedBold");
-				} else {
-					$this->debug("%s","\tfclose successful.\n","GreenBold");
-				}
+				//if($fclose===FALSE){
+				//	$this->debug("%s","\tfclose failed.\n","RedBold");
+				//} else {
+				//	$this->debug("%s","\tfclose successful.\n","GreenBold");
+				//}
 
 			} else {
 				$this->debug("%s","\tError shutting down socket: Child Socket is no longer a valid resource.\n","RedBold");
