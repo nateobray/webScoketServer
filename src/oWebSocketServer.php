@@ -136,7 +136,7 @@
 			while(true){
 				++$numLoops;
 				if( $numLoops > 100){
-					$this->debug("%",date("Y-m-d H:i:s")." - Parent process (".$this->parent_process_pid.") still alive (sockets: ".count($this->socketNumbers).").\n");
+					$this->debug("%","\n".date("Y-m-d H:i:s")." - Parent process (".$this->parent_process_pid.") still alive (sockets: ".count($this->socketNumbers).").\n");
 					if(!empty($this->stoppedProcesses)){
 						print_r("Stopped processes:\n");
 						print_r($this->stoppedProcesses);
@@ -185,8 +185,8 @@
 				}
 
 				//	4. 	check if child processes have terminated and update list
-
-				$exited_pid = pcntl_waitpid(0,$status,WNOHANG|WUNTRACED);
+				$this->debug("%s",".");
+				$exited_pid = pcntl_waitpid(-1,$status,WNOHANG|WUNTRACED);
 				if( $exited_pid > 0 ){
 
 					if(pcntl_wifexited($status)){
