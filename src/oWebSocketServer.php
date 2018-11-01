@@ -177,13 +177,6 @@
 
 				}
 
-				//	3. 	check message queue for messages for the parent process
-				$this->debug("%s","-");
-				$message = $this->messageQueueReceive( $this->parent_process_pid );
-				if( $message !== FALSE ){
-					$this->onQueueReceiveParent( $message );
-				}
-
 				//	4. 	check if child processes have terminated and update list
 				$this->debug("%s","=");
 				$exited_pid = pcntl_waitpid(-1,$status,WNOHANG|WUNTRACED);
@@ -224,6 +217,13 @@
 							$this->debug("%s","\nProcess " . $exited_pid . " was termined from an uncaught signal and did not exit normally, remaining: ".count($this->socketNumbers)."\n","YellowBold");
 						}
 					}
+				}
+
+				//	3. 	check message queue for messages for the parent process
+				$this->debug("%s","-");
+				$message = $this->messageQueueReceive( $this->parent_process_pid );
+				if( $message !== FALSE ){
+					$this->onQueueReceiveParent( $message );
 				}
 
 				$this->onParentLoop();
@@ -430,7 +430,7 @@
 		public function onQueueReceiveParent( $message )
 		{
 			if( empty($this->socketNumbers) ){
-				print_r("\tNo child process to relay message to.\n");
+				print_r("\nNo child process to relay message to.\n");
 			}
 			forEach( $this->socketNumbers as $i => $num ){
 				//print_r("\tRelaying message on process: ".$num."\n");
