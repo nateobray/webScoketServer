@@ -179,7 +179,7 @@
 
 				//	4. 	check if child processes have terminated and update list
 				$this->debug("%s","=");
-				$exited_pid = pcntl_waitpid(-1,$status,WNOHANG|WUNTRACED);
+				$exited_pid = pcntl_wait($status,WNOHANG|WUNTRACED);
 				if( $exited_pid > 0 ){
 
 					if(pcntl_wifexited($status)){
@@ -230,7 +230,7 @@
 				
 			}
 			$this->debug("%s","Broken out of infinite while loop.\m","RedBold");
-			pcntl_wait();
+			//pcntl_wait();
 
 		}
 
