@@ -137,14 +137,11 @@
 				++$numLoops;
 				if( $numLoops > 100){
 					$this->debug("%","\n".date("Y-m-d H:i:s")." - Parent process (".$this->parent_process_pid.") still alive (sockets: ".count($this->socketNumbers).").\n");
-					if(!empty($this->stoppedProcesses)){
-						print_r("Stopped processes:\n");
-						print_r($this->stoppedProcesses);
-					}
 					$numLoops = 0;
 				}
 
 				//	1. 	stream_select: look for changes on the socket to process incoming connections
+				$this->debug("%s","=");
 				$changed = array( 0 => $this->socket ); $null = NULL;
 				stream_select( $changed, $null, $null, 0, 20000 );
 
@@ -167,6 +164,7 @@
 						unset($changed[$found_socket]);
 						usleep(20000);
 					} else if( $pid === 0 ) {
+						$this->debug("%s","Connecting new socket.\n");
 						$new_socket = $this->connect($this->socket);
 						if( $new_socket ){  
 							$this->select( $new_socket );
