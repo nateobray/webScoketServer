@@ -18,7 +18,9 @@ class WebSocketServer
         }
         $socketServer = new \obray\SocketServer('tcp', $host, $port, $context);
         $socketServer->showServerStatus(false);
-        $socketServer->registerhandler(new \obray\handlers\WebSocketServer());
+        $webSocketHandler = new \obray\handlers\WebSocketServer();
+        $webSocketHandler->registerWebSocketHandler(new \obray\base\WebSocketBaseHandler());
+        $socketServer->registerhandler($webSocketHandler);
         return $socketServer;
     }
 

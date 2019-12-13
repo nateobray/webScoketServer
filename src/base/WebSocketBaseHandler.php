@@ -33,6 +33,21 @@ class WebSocketBaseHandler implements \obray\interfaces\WebSocketServerHandlerIn
         print_r("success!\n");
     }
 
+    public function onConnectFailed($socket, \obray\SocketServer $server): void
+    {
+        print_r("Failed!\n");
+    }
+    
+    public function onWriteFailed($data, $socket, \obray\SocketServer $server): void
+    {
+        print_r("Write Failed!\n");
+    }
+
+    public function onReadFailed($socket, \obray\SocketServer $server): void
+    {
+        print_r("Read Failed!\n");
+    }
+
     public function onUpgrade($data, $socket, \obray\SocketServer $server): void
     {
         print_r("upgrading to web socket connection... ");
