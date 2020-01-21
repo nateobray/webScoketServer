@@ -86,6 +86,23 @@ class WebSocketServer implements \obray\interfaces\SocketServerHandlerInterface
 			$this->handler->onConnected($socket, $server);
 		}
 	}
+
+	public function onConnectFailed($socket, \obray\SocketServer $server): void
+	{
+		if(!empty($this->handler)){
+			$this->handler->onConnectFailed($socket, $server);
+		}
+	}
+
+	public function onWriteFailed($data, $socket, \obray\SocketServer $server): void
+	{
+
+	}
+
+	public function onReadFailed($socket, \obray\SocketServer $server): void
+	{
+		
+	}
 	
 	/**
 	 * Upgrade
