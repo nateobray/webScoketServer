@@ -84,7 +84,7 @@ class WebSocketFrame
      * Takes a data paramter and packages that data into a frame datastructure
      */
 
-    public function encode($data)
+    static public function encode($data)
     {
         $b1 = 0x80 | (0x1 & 0x0f);
 		$length = mb_strlen($data, '8bit');
