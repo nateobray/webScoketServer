@@ -37,7 +37,7 @@ class WebSocket
                         if(strtolower(trim($pair[1])) != 'websocket') throw new \Exception("Upgrade header invalid.");
                         break;
                     case 'connection':
-                        if(strtolower(trim($pair[1])) != 'upgrade') throw new \Exception("Connection header invalid.");
+                        if(strpos(strtolower(trim($pair[1])), 'upgrade') === false) throw new \Exception("Connection header invalid.");
                         break;
                     case 'sec-websocket-key':
                         if(strlen(base64_decode(trim($pair[1]))) !== 16 ) throw new \Exception("Sec-WebSocket-Key invalid.");
