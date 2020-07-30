@@ -13,9 +13,13 @@ class WebSocket
     
     private $maximumDecodes = 10000;
     
-    public function __construct($socket, string $request)
+    public function __construct($socket=null, string $request=null)
     {
-        $this->parse($request);
+        try{
+            $this->parse($request);
+        } catch (\Exception $e){
+            throw new \Exception($e->getMessage());
+        }
     }
 
     public function getSecWebSocketKey()
@@ -26,6 +30,7 @@ class WebSocket
     public function parse($request): void
     {
         $request = explode("\n", $request);
+        
         $this->headers = new \stdClass();
         forEach($request as $index => $line){
             if(empty($line)) continue;
