@@ -13,6 +13,7 @@ interface WebSocketServerHandlerInterface
     public function onWriteFailed($data, $socket, \obray\SocketServer $server): void;
     public function onReadFailed($socket, \obray\SocketServer $server): void;
     public function onUpgrade($data, $socket, \obray\SocketServer $server): void;
+    public function onUpgradeFailed($data, $socket, \obray\SocketServer $server): void;
     public function onUpgraded($data, $socket, \obray\SocketServer $server): void;
     public function onDisconnect($socket, \obray\SocketServer $server): void;
     public function onDisconnected($socket, \obray\SocketServer $server): void;
