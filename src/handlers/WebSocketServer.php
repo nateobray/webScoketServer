@@ -116,7 +116,26 @@ class WebSocketServer implements \obray\interfaces\SocketServerHandlerInterface
 		if(!empty($this->handler)){
 			$this->handler->onUpgrade($data, $socket, $server);
 		}
-        $WebSocket = new \obray\WebSocket($socket, $data);
+		try {
+			$WebSocket = new \obray\WebSocket($socket, $data);
+
+		// handle failed web socket upgrade request
+		} catch(\Exception $e) {
+			$new_headers = array( 0 => "HTTP/1.1 400 Bad Request" );
+			$new_headers[] = "Content-Type: text/html";
+			$new_headers[] = "Content-Length: 17";
+			$new_headers[] = "\r\n";
+			$new_headers[] = "400 Bad Request";
+			$upgradeResponse = implode("\r\n",$new_headers);
+			$server->qWrite($socket, $upgradeResponse);
+			if(!empty($this->handler)){
+				$this->handler->onUpgradeFailed($e->getMessage(), $socket, $server);
+				$server->qDisconnect($socket);
+			}
+			return false;
+		}
+
+		// handel successful socket upgrade request
 		$this->activeSockets[] = $socket;
 		$this->activeWebSockets[] = $WebSocket;
         $new_headers = array( 0 => "HTTP/1.1 101 Switching Protocols" );
@@ -126,7 +145,9 @@ class WebSocketServer implements \obray\interfaces\SocketServerHandlerInterface
         $new_headers[] = "Sec-WebSocket-Accept: $secAccept";
         $new_headers[] = "\r\n";
 		$upgradeResponse = implode("\r\n",$new_headers);
+		
 		$server->qWrite($socket, $upgradeResponse);
+		
 		if(!empty($this->handler)){
 			$this->handler->onUpgraded($upgradeResponse, $socket, $server);
 		}
