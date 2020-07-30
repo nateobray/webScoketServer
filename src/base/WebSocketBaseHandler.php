@@ -52,6 +52,11 @@ class WebSocketBaseHandler implements \obray\interfaces\WebSocketServerHandlerIn
     {
         print_r("upgrading to web socket connection... ");
     }
+    
+    public function onUpgradeFailed($data, $socket, \obray\SocketServer $server): void
+    {
+        print_r("Socket upgrade failed: ".$data."\n");
+    }
 
     public function onUpgraded($data, $socket, \obray\SocketServer $server): void
     {
