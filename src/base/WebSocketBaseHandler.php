@@ -55,7 +55,14 @@ class WebSocketBaseHandler implements \obray\interfaces\WebSocketServerHandlerIn
     
     public function onUpgradeFailed($data, $socket, \obray\SocketServer $server): void
     {
-        print_r("Socket upgrade failed: ".$data."\n");
+        $new_headers = array( 0 => "HTTP/1.1 400 Bad Request" );
+        $new_headers[] = "Content-Type: text/html";
+        $new_headers[] = "Content-Length: 17";
+        $new_headers[] = "\r\n";
+        $new_headers[] = "400 Bad Request";
+        $upgradeResponse = implode("\r\n",$new_headers);
+        $server->qWrite($socket, $upgradeResponse);
+        print_r("Socket upgrade failed: ".$data[1]."\n");
     }
 
     public function onUpgraded($data, $socket, \obray\SocketServer $server): void
