@@ -111,25 +111,19 @@ class WebSocketServer implements \obray\interfaces\SocketServerHandlerInterface
 	 * a valid web socket connection
 	 */
 
-    private function upgrade(string $data, $socket, $server)
-    {
+    	private function upgrade(string $data, $socket, $server)
+    	{
 		if(!empty($this->handler)){
 			$this->handler->onUpgrade($data, $socket, $server);
 		}
+		// attempt create Web Socket
 		try {
 			$WebSocket = new \obray\WebSocket($socket, $data);
 
 		// handle failed web socket upgrade request
 		} catch(\Exception $e) {
-			$new_headers = array( 0 => "HTTP/1.1 400 Bad Request" );
-			$new_headers[] = "Content-Type: text/html";
-			$new_headers[] = "Content-Length: 17";
-			$new_headers[] = "\r\n";
-			$new_headers[] = "400 Bad Request";
-			$upgradeResponse = implode("\r\n",$new_headers);
-			$server->qWrite($socket, $upgradeResponse);
 			if(!empty($this->handler)){
-				$this->handler->onUpgradeFailed($e->getMessage(), $socket, $server);
+				$this->handler->onUpgradeFailed([$data, $e->getMessage()], $socket, $server);
 				$server->qDisconnect($socket);
 			}
 			return false;
@@ -138,12 +132,12 @@ class WebSocketServer implements \obray\interfaces\SocketServerHandlerInterface
 		// handel successful socket upgrade request
 		$this->activeSockets[] = $socket;
 		$this->activeWebSockets[] = $WebSocket;
-        $new_headers = array( 0 => "HTTP/1.1 101 Switching Protocols" );
-        $new_headers[] = "Upgrade: websocket";
-        $new_headers[] = "Connection: Upgrade";
-        $secAccept = base64_encode(pack('H*', sha1($WebSocket->getSecWebSocketKey() . '258EAFA5-E914-47DA-95CA-C5AB0DC85B11')));
-        $new_headers[] = "Sec-WebSocket-Accept: $secAccept";
-        $new_headers[] = "\r\n";
+        	$new_headers = array( 0 => "HTTP/1.1 101 Switching Protocols" );
+	        $new_headers[] = "Upgrade: websocket";
+        	$new_headers[] = "Connection: Upgrade";
+	        $secAccept = base64_encode(pack('H*', sha1($WebSocket->getSecWebSocketKey() . '258EAFA5-E914-47DA-95CA-C5AB0DC85B11')));
+        	$new_headers[] = "Sec-WebSocket-Accept: $secAccept";
+	        $new_headers[] = "\r\n";
 		$upgradeResponse = implode("\r\n",$new_headers);
 		
 		$server->qWrite($socket, $upgradeResponse);
