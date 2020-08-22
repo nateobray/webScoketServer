@@ -8,6 +8,7 @@ class WebSocketServer implements \obray\interfaces\SocketServerHandlerInterface
 
     public function onData(string $data, \obray\SocketConnection $connection): void
     {
+		print_r("blah");
 		$index = array_search($connection, $this->activeConnections);
         if( $index === false ) {
 			$response = $this->upgrade($data, $connection);
@@ -130,7 +131,7 @@ class WebSocketServer implements \obray\interfaces\SocketServerHandlerInterface
 		}
 
 		// handel successful socket upgrade request
-		$this->activeSockets[] = $socket;
+		$this->activeConnections[] = $connection;
 		$this->activeWebSockets[] = $WebSocket;
         	$new_headers = array( 0 => "HTTP/1.1 101 Switching Protocols" );
 	        $new_headers[] = "Upgrade: websocket";
@@ -140,7 +141,7 @@ class WebSocketServer implements \obray\interfaces\SocketServerHandlerInterface
 	        $new_headers[] = "\r\n";
 		$upgradeResponse = implode("\r\n",$new_headers);
 		
-		$connection->qWrite($socket, $upgradeResponse);
+		$connection->qWrite($upgradeResponse);
 		
 		if(!empty($this->handler)){
 			$this->handler->onUpgraded($upgradeResponse, $connection);
