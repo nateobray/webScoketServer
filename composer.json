@@ -5,11 +5,12 @@
 	"homepage": "http://www.obray.net",
 	"require": {
 		"php": ">=7.1",
-		"obray/socket-server": "^1.0"
+		"obray/socket-server": "dev-master"
 	},
 	"autoload": {
 		"psr-4": {
 			"obray\\": "src"
 		}
-	}
+	},
+	"minimum-stability": "dev"
 }

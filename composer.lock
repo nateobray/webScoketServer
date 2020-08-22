@@ -4,20 +4,20 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#composer-lock-the-lock-file",
         "This file is @generated automatically"
     ],
-    "content-hash": "dd5ff544b240f216c9b8f1fd0383737b",
+    "content-hash": "afa66b42cbcea2dc204b6f7556c8ec3b",
     "packages": [
         {
             "name": "obray/socket-server",
-            "version": "v1.0.8",
+            "version": "dev-master",
             "source": {
                 "type": "git",
                 "url": "https://github.com/nateobray/SocketServer.git",
-                "reference": "78db6b7e748c4f5fe4f750506c23d5327c16dcc1"
+                "reference": "2645954e58bbe1f2c84d87099155d32b327e5e0f"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/nateobray/SocketServer/zipball/78db6b7e748c4f5fe4f750506c23d5327c16dcc1",
-                "reference": "78db6b7e748c4f5fe4f750506c23d5327c16dcc1",
+                "url": "https://api.github.com/repos/nateobray/SocketServer/zipball/2645954e58bbe1f2c84d87099155d32b327e5e0f",
+                "reference": "2645954e58bbe1f2c84d87099155d32b327e5e0f",
                 "shasum": ""
             },
             "require": {
@@ -34,13 +34,15 @@
                 "MIT"
             ],
             "description": "Generic socket server with non-blocking reads and writes.",
-            "time": "2019-12-12T20:51:39+00:00"
+            "time": "2020-08-22T21:44:13+00:00"
         }
     ],
     "packages-dev": [],
     "aliases": [],
-    "minimum-stability": "stable",
-    "stability-flags": [],
+    "minimum-stability": "dev",
+    "stability-flags": {
+        "obray/socket-server": 20
+    },
     "prefer-stable": false,
     "prefer-lowest": false,
     "platform": {

@@ -3,45 +3,45 @@ namespace obray\handlers;
 
 class WebSocketServer implements \obray\interfaces\SocketServerHandlerInterface
 {
-	private $activeSockets = [];
+	private $activeConnections = [];
 	private $activeWebSockets = [];
 
-    public function onData(string $data, $socket, \obray\SocketServer $server): void
+    public function onData(string $data, \obray\SocketConnection $connection): void
     {
-		$index = array_search($socket, $this->activeSockets);
+		$index = array_search($connection, $this->activeConnections);
         if( $index === false ) {
-			$response = $this->upgrade($data, $socket, $server);
+			$response = $this->upgrade($data, $connection);
         } else {
-			$this->activeWebSockets[$index]->decode($data, $server, $socket, [$this, 'onMessage']);
+			$this->activeWebSockets[$index]->decode($data, $connection, [$this, 'onMessage']);
         }
 	}
 
-	public function onMessage(int $opcode, string $msg, $server, $socket)
+	public function onMessage(int $opcode, string $msg, \obray\SocketConnection $connection)
 	{
 		switch($opcode) {
 			case \obray\WebSocketFrame::TEXT:
 				if(!empty($this->handler)){
-					$this->handler->onText($msg, $socket, $server);
+					$this->handler->onText($msg, $connection);
 				}
 				break;
 			case \obray\WebSocketFrame::BINARY:
 				if(!empty($this->handler)){
-					$this->handler->onBinary($msg, $socket, $server);
+					$this->handler->onBinary($msg, $connection);
 				}
 				break;
 			case \obray\WebSocketFrame::CLOSE:
 				if(!empty($this->handler)){
-					$this->handler->onClose($socket, $server);
+					$this->handler->onClose($socket, $connection);
 				}
 				break;
 			case \obray\WebSocketFrame::PING:
 				if(!empty($this->handler)){
-					$this->handler->onPing($socket, $server);
+					$this->handler->onPing($socket, $connection);
 				}
 				break;
 			case \obray\WebSocketFrame::PONG:
 				if(!empty($this->handler)){
-					$this->handler->onPong($socket, $server);
+					$this->handler->onPong($socket, $connection);
 				}
 				break;
 		}
@@ -54,52 +54,52 @@ class WebSocketServer implements \obray\interfaces\SocketServerHandlerInterface
 	 * up closed socket connections.
 	 */
 	
-	public function onDisconnect($socket, \obray\SocketServer $server): void
+	public function onDisconnect(\obray\SocketConnection $connection): void
     {
 		if(!empty($this->handler)){
-			$this->handler->onDisconnect($socket, $server);
+			$this->handler->onDisconnect($connection);
 		}
-		$index = array_search($socket, $this->activeSockets);
+		$index = array_search($connection, $this->activeConnections);
 		if($index !== false) {
-			unset($this->activeSockets[$index]);
+			unset($this->activeConnections[$index]);
 			unset($this->activeWebSockets[$index]);
 		}
 	}
 
-	public function onDisconnected($socket, \obray\SocketServer $server): void 
+	public function onDisconnected(\obray\SocketConnection $connection): void 
 	{
 		if(!empty($this->handler)){
-			$this->handler->onDisconnected($socket, $server);
+			$this->handler->onDisconnected($connection);
 		}
 	}
 
-	public function onConnect($socket, \obray\SocketServer $server): void 
+	public function onConnect(\obray\SocketConnection $connection): void 
 	{
 		if(!empty($this->handler)){
-			$this->handler->onConnect($socket, $server);
+			$this->handler->onConnect($connection);
 		}
 	}
 
-	public function onConnected($socket, \obray\SocketServer $server): void 
+	public function onConnected(\obray\SocketConnection $connection): void 
 	{
 		if(!empty($this->handler)){
-			$this->handler->onConnected($socket, $server);
+			$this->handler->onConnected($connection);
 		}
 	}
 
-	public function onConnectFailed($socket, \obray\SocketServer $server): void
+	public function onConnectFailed(\obray\SocketConnection $connection): void
 	{
 		if(!empty($this->handler)){
-			$this->handler->onConnectFailed($socket, $server);
+			$this->handler->onConnectFailed($connection);
 		}
 	}
 
-	public function onWriteFailed($data, $socket, \obray\SocketServer $server): void
+	public function onWriteFailed($data, \obray\SocketConnection $connection): void
 	{
 
 	}
 
-	public function onReadFailed($socket, \obray\SocketServer $server): void
+	public function onReadFailed(\obray\SocketConnection $connection): void
 	{
 		
 	}
@@ -111,20 +111,20 @@ class WebSocketServer implements \obray\interfaces\SocketServerHandlerInterface
 	 * a valid web socket connection
 	 */
 
-    	private function upgrade(string $data, $socket, $server)
-    	{
+    private function upgrade(string $data, \obray\SocketConnection $connection)
+    {
 		if(!empty($this->handler)){
-			$this->handler->onUpgrade($data, $socket, $server);
+			$this->handler->onUpgrade($data, $connection);
 		}
 		// attempt create Web Socket
 		try {
-			$WebSocket = new \obray\WebSocket($socket, $data);
+			$WebSocket = new \obray\WebSocket($data);
 
 		// handle failed web socket upgrade request
 		} catch(\Exception $e) {
 			if(!empty($this->handler)){
-				$this->handler->onUpgradeFailed([$data, $e->getMessage()], $socket, $server);
-				$server->qDisconnect($socket);
+				$this->handler->onUpgradeFailed([$data, $e->getMessage()], $connection);
+				$connection->qDisconnect();
 			}
 			return false;
 		}
@@ -140,10 +140,10 @@ class WebSocketServer implements \obray\interfaces\SocketServerHandlerInterface
 	        $new_headers[] = "\r\n";
 		$upgradeResponse = implode("\r\n",$new_headers);
 		
-		$server->qWrite($socket, $upgradeResponse);
+		$connection->qWrite($socket, $upgradeResponse);
 		
 		if(!empty($this->handler)){
-			$this->handler->onUpgraded($upgradeResponse, $socket, $server);
+			$this->handler->onUpgraded($upgradeResponse, $connection);
 		}
 	}
 
@@ -153,12 +153,12 @@ class WebSocketServer implements \obray\interfaces\SocketServerHandlerInterface
 	 * Queues up a ping write to the socket
 	 */
 
-	private function sendPing($socket, $server): void
+	private function sendPing(\obray\SocketConnection $connection): void
 	{
 		$b1 = 0x89;
 		$length = strlen("");
 		$header = pack('CC', $b1, $length);
-		$server->qwrite($socket, $header);
+		$connection->qwrite($header);
 	}
 
 	/**
@@ -167,12 +167,12 @@ class WebSocketServer implements \obray\interfaces\SocketServerHandlerInterface
 	 * This queues up a write to send a pong
 	 */
 	
-	private function sendPong($socket, $server): void
+	private function sendPong(\obray\SocketConnection $connection): void
 	{
 		$b1 = 0x8A;
 		$length = strlen("");
 		$header = pack('CC', $b1, $length);
-		$server->qwrite($socket, $header);
+		$connection->qwrite($header);
 	}
 
 	/**
@@ -181,13 +181,13 @@ class WebSocketServer implements \obray\interfaces\SocketServerHandlerInterface
 	 * This queus up a write to close a connection
 	 */
 
-	private function sendClose($socket, $server): void
+	private function sendClose(\obray\SocketConnection $connection): void
 	{
 		$b1 = 0x88;
 		$length = strlen("");
 		$header = pack('CC', $b1, $length);
-		$server->qwrite($socket, $header);
-		$server->qdisconnect($socket);
+		$connection->qwrite($header);
+		$connection->qdisconnect();
 	}
 
 	public function registerWebSocketHandler($handler): void

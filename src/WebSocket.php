@@ -13,7 +13,7 @@ class WebSocket
     
     private $maximumDecodes = 10000;
     
-    public function __construct($socket=null, string $request=null)
+    public function __construct(string $request=null)
     {
         try{
             $this->parse($request);
@@ -68,7 +68,7 @@ class WebSocket
 	 * completed message from the client, it calls the callback method.
 	 */
 
-	public function decode(string $data, $server, $socket, $callback)
+	public function decode(string $data, \obray\SocketConnection $connection, $callback)
 	{
 		$data = (($this->unprocessed!==false)?$this->unprocessed:'') . $data;
         // while we have remaining data, att
@@ -87,7 +87,7 @@ class WebSocket
 							$message .= $payload;
 						}
 					}
-					$callback($this->frames[0]->getOpcode(), $message, $server, $socket);
+					$callback($this->frames[0]->getOpcode(), $message, $connection);
 					$this->frames = [];
 				}
 				$this->unprocessed = '';
