@@ -8,7 +8,6 @@ class WebSocketServer implements \obray\interfaces\SocketServerHandlerInterface
 
     public function onData(string $data, \obray\SocketConnection $connection): void
     {
-		print_r("blah");
 		$index = array_search($connection, $this->activeConnections);
         if( $index === false ) {
 			$response = $this->upgrade($data, $connection);
