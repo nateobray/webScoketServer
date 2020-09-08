@@ -6,7 +6,7 @@ class WebSocketServer implements \obray\interfaces\SocketServerHandlerInterface
 	private $activeConnections = [];
 	private $activeWebSockets = [];
 
-    public function onData(string $data, \obray\SocketConnection $connection): void
+    public function onData(string $data, \obray\interfaces\SocketConnectionInterface $connection): void
     {
 		$index = array_search($connection, $this->activeConnections);
         if( $index === false ) {
@@ -16,7 +16,7 @@ class WebSocketServer implements \obray\interfaces\SocketServerHandlerInterface
         }
 	}
 
-	public function onMessage(int $opcode, string $msg, \obray\SocketConnection $connection)
+	public function onMessage(int $opcode, string $msg, \obray\interfaces\SocketConnectionInterface $connection)
 	{
 		switch($opcode) {
 			case \obray\WebSocketFrame::TEXT:
@@ -54,7 +54,7 @@ class WebSocketServer implements \obray\interfaces\SocketServerHandlerInterface
 	 * up closed socket connections.
 	 */
 	
-	public function onDisconnect(\obray\SocketConnection $connection): void
+	public function onDisconnect(\obray\interfaces\SocketConnectionInterface $connection): void
     {
 		if(!empty($this->handler)){
 			$this->handler->onDisconnect($connection);
@@ -66,40 +66,40 @@ class WebSocketServer implements \obray\interfaces\SocketServerHandlerInterface
 		}
 	}
 
-	public function onDisconnected(\obray\SocketConnection $connection): void 
+	public function onDisconnected(\obray\interfaces\SocketConnectionInterface $connection): void 
 	{
 		if(!empty($this->handler)){
 			$this->handler->onDisconnected($connection);
 		}
 	}
 
-	public function onConnect(\obray\SocketConnection $connection): void 
+	public function onConnect(\obray\interfaces\SocketConnectionInterface $connection): void 
 	{
 		if(!empty($this->handler)){
 			$this->handler->onConnect($connection);
 		}
 	}
 
-	public function onConnected(\obray\SocketConnection $connection): void 
+	public function onConnected(\obray\interfaces\SocketConnectionInterface $connection): void 
 	{
 		if(!empty($this->handler)){
 			$this->handler->onConnected($connection);
 		}
 	}
 
-	public function onConnectFailed(\obray\SocketConnection $connection): void
+	public function onConnectFailed(\obray\interfaces\SocketConnectionInterface $connection): void
 	{
 		if(!empty($this->handler)){
 			$this->handler->onConnectFailed($connection);
 		}
 	}
 
-	public function onWriteFailed($data, \obray\SocketConnection $connection): void
+	public function onWriteFailed($data, \obray\interfaces\SocketConnectionInterface $connection): void
 	{
 
 	}
 
-	public function onReadFailed(\obray\SocketConnection $connection): void
+	public function onReadFailed(\obray\interfaces\SocketConnectionInterface $connection): void
 	{
 		
 	}
@@ -111,7 +111,7 @@ class WebSocketServer implements \obray\interfaces\SocketServerHandlerInterface
 	 * a valid web socket connection
 	 */
 
-    private function upgrade(string $data, \obray\SocketConnection $connection)
+    private function upgrade(string $data, \obray\interfaces\SocketConnectionInterface $connection)
     {
 		if(!empty($this->handler)){
 			$this->handler->onUpgrade($data, $connection);
@@ -153,7 +153,7 @@ class WebSocketServer implements \obray\interfaces\SocketServerHandlerInterface
 	 * Queues up a ping write to the socket
 	 */
 
-	private function sendPing(\obray\SocketConnection $connection): void
+	private function sendPing(\obray\interfaces\SocketConnectionInterface $connection): void
 	{
 		$b1 = 0x89;
 		$length = strlen("");
@@ -167,7 +167,7 @@ class WebSocketServer implements \obray\interfaces\SocketServerHandlerInterface
 	 * This queues up a write to send a pong
 	 */
 	
-	private function sendPong(\obray\SocketConnection $connection): void
+	private function sendPong(\obray\interfaces\SocketConnectionInterface $connection): void
 	{
 		$b1 = 0x8A;
 		$length = strlen("");
@@ -181,7 +181,7 @@ class WebSocketServer implements \obray\interfaces\SocketServerHandlerInterface
 	 * This queus up a write to close a connection
 	 */
 
-	private function sendClose(\obray\SocketConnection $connection): void
+	private function sendClose(\obray\interfaces\SocketConnectionInterface $connection): void
 	{
 		$b1 = 0x88;
 		$length = strlen("");
